@@ -378,6 +378,63 @@
             line-height: 1.8;
         }
 
+        /* ── Survey Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 620px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .modal-header {
+            background: #1B2A4A;
+            color: white;
+            padding: 18px 24px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .modal-close:hover { opacity: 0.7; }
+        .modal-content iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+        @media (max-width: 600px) {
+            .modal-content iframe { height: 500px; }
+        }
+
         /* ── Footer ── */
         .footer {
             background: #111;
@@ -425,7 +482,7 @@
     <!-- CTA 1 -->
     <div class="cta-section">
         <h2>We Will Beat All Serious Written Cash Offers Within 24 Hours</h2>
-        <a href="#survey" class="cta-button">Click Here to Get Started</a>
+        <a class="cta-button" onclick="openSurvey()" style="cursor:pointer;">Click Here to Get Started</a>
     </div>
 
     <!-- VIDEO: Founders Intro -->
@@ -637,7 +694,7 @@
     <!-- CTA 2 -->
     <div class="cta-section">
         <h2>Get a Written Cash Offer Within 24hrs</h2>
-        <a href="#survey" class="cta-button">Click Here to Start</a>
+        <a class="cta-button" onclick="openSurvey()" style="cursor:pointer;">Click Here to Start</a>
     </div>
 
     <!-- Middle option -->
@@ -713,7 +770,7 @@
     <!-- CTA 3 -->
     <div class="cta-section">
         <h2>Get a Written Cash Offer Within 24hrs</h2>
-        <a href="#survey" class="cta-button">Click Here to Start</a>
+        <a class="cta-button" onclick="openSurvey()" style="cursor:pointer;">Click Here to Start</a>
     </div>
 
     <!-- FAQ -->
@@ -756,11 +813,6 @@
             <p>The insurance company wants more money.</p>
             <p>And you're just trying to breathe.</p>
         </div>
-    </div>
-
-    <!-- Before & After -->
-    <div class="media-placeholder">
-        <img src="before-after.webp" alt="Before and after home renovation by 3 Step Home Sale" style="width:100%;border-radius:10px;margin:30px 0;">
     </div>
 
     <!-- Steps Section -->
@@ -858,25 +910,47 @@
         <iframe src="https://www.youtube.com/embed/FjiJf1QM15Y" title="Homeowner Testimonial" allowfullscreen></iframe>
     </div>
 
-    <!-- Survey Section -->
-    <div class="survey-section" id="survey">
+    <!-- Final CTA -->
+    <div class="cta-section">
         <h2>Get a Written Cash Offer Within 24hrs</h2>
-        <p>Answer a few simple questions about your home.</p>
-        <div class="survey-wrapper">
-            <iframe src="https://3-step.vercel.app" title="3 Step Home Buyers Property Survey"></iframe>
-        </div>
+        <a class="cta-button" onclick="openSurvey()" style="cursor:pointer;">Click Here to Get Your Offer</a>
     </div>
 
-    <!-- Final CTA -->
     <div class="final-cta">
-        <a href="#survey" class="cta-button">Click Here to Start</a>
-        <p style="margin-top: 25px;">Click the button above.</p>
+        <p>Click the button above.</p>
         <p>Answer a few simple questions about your home.</p>
         <p>And we'll show you clearly which path makes the most sense.</p>
         <p style="margin-top: 20px;"><strong>No pressure.</strong></p>
         <p><strong>No games.</strong></p>
         <p>Just the truth, with real options &mdash; so you can choose what happens next instead of waiting for life to choose for you.</p>
     </div>
+
+    <!-- Survey Modal -->
+    <div class="modal-overlay" id="surveyModal" onclick="closeSurvey(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span>Get Your Cash Offer</span>
+                <button class="modal-close" onclick="closeSurvey()">&times;</button>
+            </div>
+            <iframe src="about:blank" id="surveyFrame" title="3 Step Home Sale Property Survey"></iframe>
+        </div>
+    </div>
+
+    <script>
+        function openSurvey() {
+            document.getElementById('surveyFrame').src = 'https://3-step.vercel.app';
+            document.getElementById('surveyModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeSurvey(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('surveyModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSurvey();
+        });
+    </script>
 
     <!-- Footer -->
     <div class="footer">
