@@ -456,7 +456,136 @@
             .benefits-list li { font-size: 15px; }
             .survey-wrapper iframe { height: 600px; }
         }
+        /* ── Survey Form (inside modal) ── */
+        .survey-form .sf-step {
+            display: none;
+        }
+        .survey-form .sf-step.sf-active {
+            display: block;
+            animation: sfFadeIn 0.3s ease-in;
+        }
+        @keyframes sfFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .survey-form {
+            padding: 30px 24px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .survey-form .sf-progress {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        .survey-form .sf-progress-fill {
+            height: 100%;
+            background: #2B5EA7;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        .survey-form .sf-step-num {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .survey-form .sf-question {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1B2A4A;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+        .survey-form .sf-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        .survey-form .sf-input:focus {
+            outline: none;
+            border-color: #2B5EA7;
+        }
+        .survey-form .sf-btn-continue {
+            width: 100%;
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 600;
+            background: #2B5EA7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-family: inherit;
+        }
+        .survey-form .sf-btn-continue:hover {
+            background: #1B2A4A;
+        }
+        .survey-form .sf-btn-back {
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            padding: 6px 0;
+            font-family: inherit;
+        }
+        .survey-form .sf-btn-back:hover { color: #2B5EA7; }
+        .survey-form .sf-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .survey-form .sf-option {
+            padding: 16px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            font-family: inherit;
+        }
+        .survey-form .sf-option:hover {
+            background: #EBF0FA;
+            border-color: #2B5EA7;
+            transform: translateX(5px);
+        }
+        .survey-form .sf-input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .survey-form .sf-input-row .sf-input {
+            margin-bottom: 0;
+        }
+        .survey-form .sf-dq {
+            text-align: center;
+            padding: 30px 10px;
+        }
+        .survey-form .sf-dq h3 {
+            color: #1B2A4A;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+        .survey-form .sf-dq p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
     </style>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCDtN-QzZ8zcoKOhxQLD4HKcWEiY39Xqcs&libraries=places"></script>
 </head>
 <body>
 
@@ -932,13 +1061,101 @@
                 <span>Get Your Cash Offer</span>
                 <button class="modal-close" onclick="closeSurvey()">&times;</button>
             </div>
-            <iframe src="about:blank" id="surveyFrame" title="3 Step Home Sale Property Survey"></iframe>
+            <div class="survey-form" id="surveyForm">
+                <div class="sf-progress"><div class="sf-progress-fill" id="sfProgress"></div></div>
+
+                <!-- Step 1: Address -->
+                <div class="sf-step sf-active" data-sf="1">
+                    <div class="sf-step-num">Question 1 of 5</div>
+                    <div class="sf-question">What's the property address?</div>
+                    <input type="text" class="sf-input" id="sfAddress" placeholder="Enter your property address" autocomplete="off">
+                    <button class="sf-btn-continue" onclick="sfValidateAddress()">Continue &rarr;</button>
+                </div>
+
+                <!-- Step 2: Market Status -->
+                <div class="sf-step" data-sf="2">
+                    <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
+                    <div class="sf-step-num">Question 2 of 5</div>
+                    <div class="sf-question">Is this home currently listed on the market?</div>
+                    <div class="sf-options">
+                        <button class="sf-option" onclick="sfSelect('marketStatus','Not listed')">No, it's not listed on the market</button>
+                        <button class="sf-option" onclick="sfDisqualify()">Yes, it's listed with a realtor</button>
+                        <button class="sf-option" onclick="sfDisqualify()">Yes, it's listed for sale by owner</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Property Type -->
+                <div class="sf-step" data-sf="3">
+                    <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
+                    <div class="sf-step-num">Question 3 of 5</div>
+                    <div class="sf-question">What type of property do you have?</div>
+                    <div class="sf-options">
+                        <button class="sf-option" onclick="sfSelect('propertyType','Single Family')">Single Family Home</button>
+                        <button class="sf-option" onclick="sfSelect('propertyType','Multi-Family')">Multi-Family Property</button>
+                        <button class="sf-option" onclick="sfDisqualify()">Condo / Townhouse</button>
+                        <button class="sf-option" onclick="sfDisqualify()">Mobile Home</button>
+                        <button class="sf-option" onclick="sfDisqualify()">Commercial Property</button>
+                        <button class="sf-option" onclick="sfDisqualify()">Land / Vacant Lot</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Motivation -->
+                <div class="sf-step" data-sf="4">
+                    <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
+                    <div class="sf-step-num">Question 4 of 5</div>
+                    <div class="sf-question">What's your primary reason for selling?</div>
+                    <div class="sf-options">
+                        <button class="sf-option" onclick="sfSelect('motivation','Inheritance')">Inheritance</button>
+                        <button class="sf-option" onclick="sfSelect('motivation','Foreclosure')">Foreclosure</button>
+                        <button class="sf-option" onclick="sfSelect('motivation','Downsizing')">Downsizing</button>
+                        <button class="sf-option" onclick="sfSelect('motivation','Relocation')">Relocation</button>
+                        <button class="sf-option" onclick="sfSelect('motivation','Financial hardship')">Financial hardship</button>
+                        <button class="sf-option" onclick="sfSelect('motivation','Other')">Other</button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Condition -->
+                <div class="sf-step" data-sf="5">
+                    <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
+                    <div class="sf-step-num">Question 5 of 5</div>
+                    <div class="sf-question">How would you describe your home's condition?</div>
+                    <div class="sf-options">
+                        <button class="sf-option" onclick="sfSelect('condition','Move-in ready')">Move-in ready &mdash; Updated and well-maintained</button>
+                        <button class="sf-option" onclick="sfSelect('condition','Livable but dated')">Livable but dated &mdash; Needs cosmetic updates</button>
+                        <button class="sf-option" onclick="sfSelect('condition','Needs repairs')">Needs repairs &mdash; Minor to moderate work</button>
+                        <button class="sf-option" onclick="sfSelect('condition','Major repairs needed')">Major repairs needed &mdash; Significant renovation</button>
+                    </div>
+                </div>
+
+                <!-- Step 6: Contact Info -->
+                <div class="sf-step" data-sf="6">
+                    <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
+                    <div class="sf-step-num">Final Step</div>
+                    <div class="sf-question">Where should we send your cash offer?</div>
+                    <div class="sf-input-row" style="margin-bottom:12px;">
+                        <input type="text" class="sf-input" id="sfFirst" placeholder="First name">
+                        <input type="text" class="sf-input" id="sfLast" placeholder="Last name">
+                    </div>
+                    <input type="email" class="sf-input" id="sfEmail" placeholder="Email address">
+                    <input type="tel" class="sf-input" id="sfPhone" placeholder="(555) 555-5555">
+                    <button class="sf-btn-continue" onclick="sfSubmit()">Get My Cash Offer Now &rarr;</button>
+                </div>
+
+                <!-- Disqualification -->
+                <div class="sf-step" data-sf="dq">
+                    <div class="sf-dq">
+                        <h3>Thank you for your interest</h3>
+                        <p>Unfortunately, we are not currently purchasing properties that match your criteria.</p>
+                        <p style="margin-top:10px;">We appreciate you reaching out and wish you the best in selling your property.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // ── Modal open/close ──
         function openSurvey() {
-            document.getElementById('surveyFrame').src = 'https://3-step.vercel.app';
             document.getElementById('surveyModal').classList.add('active');
             document.body.style.overflow = 'hidden';
         }
@@ -949,6 +1166,137 @@
         }
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeSurvey();
+        });
+
+        // ── Survey logic ──
+        var sfStep = 1;
+        var sfTotal = 6;
+        var sfData = {};
+        var sfAddrOk = false;
+
+        function sfShowStep(s) {
+            document.querySelectorAll('.sf-step').forEach(function(el) { el.classList.remove('sf-active'); });
+            document.querySelector('[data-sf="' + s + '"]').classList.add('sf-active');
+            if (s !== 'dq') {
+                document.getElementById('sfProgress').style.width = (sfStep / sfTotal * 100) + '%';
+            }
+        }
+
+        function sfValidateAddress() {
+            if (!sfAddrOk) {
+                alert('Please select an address from the dropdown suggestions.');
+                return;
+            }
+            sfStep++;
+            sfShowStep(sfStep);
+        }
+
+        function sfSelect(field, value) {
+            sfData[field] = value;
+            sfStep++;
+            sfShowStep(sfStep);
+        }
+
+        function sfDisqualify() {
+            sfShowStep('dq');
+        }
+
+        function sfBack() {
+            if (sfStep > 1) {
+                sfStep--;
+                sfShowStep(sfStep);
+            }
+        }
+
+        function sfSubmit() {
+            var first = document.getElementById('sfFirst').value.trim();
+            var last = document.getElementById('sfLast').value.trim();
+            var email = document.getElementById('sfEmail').value.trim();
+            var phone = document.getElementById('sfPhone').value.trim();
+
+            if (!first) { alert('Please enter your first name.'); return; }
+            if (!last) { alert('Please enter your last name.'); return; }
+            if (!email) { alert('Please enter your email address.'); return; }
+            if (!phone) { alert('Please enter your phone number.'); return; }
+
+            var digits = phone.replace(/\D/g, '');
+            if (digits.length === 10) {
+                phone = '+1 (' + digits.slice(0,3) + ') ' + digits.slice(3,6) + '-' + digits.slice(6);
+            } else if (digits.length === 11 && digits[0] === '1') {
+                phone = '+1 (' + digits.slice(1,4) + ') ' + digits.slice(4,7) + '-' + digits.slice(7);
+            }
+
+            sfData.firstName = first;
+            sfData.lastName = last;
+            sfData.email = email;
+            sfData.phone = phone;
+            sfData.source = '3-Step Properties Survey';
+
+            var webhookURL = 'https://hooks.zapier.com/hooks/catch/1509495/uc6r53v/';
+
+            fetch(webhookURL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(sfData).toString()
+            })
+            .then(function() {
+                window.location.href = '/thank-you';
+            })
+            .catch(function(err) {
+                console.error('Webhook error:', err);
+                window.location.href = '/thank-you';
+            });
+        }
+
+        // ── Google Places Autocomplete ──
+        window.addEventListener('DOMContentLoaded', function() {
+            var addrInput = document.getElementById('sfAddress');
+            if (addrInput && typeof google !== 'undefined') {
+                var ac = new google.maps.places.Autocomplete(addrInput, {
+                    types: ['address'],
+                    componentRestrictions: { country: 'us' }
+                });
+                ac.setFields(['formatted_address']);
+
+                addrInput.addEventListener('input', function() { sfAddrOk = false; });
+
+                ac.addListener('place_changed', function() {
+                    var place = ac.getPlace();
+                    if (place && place.formatted_address) {
+                        addrInput.value = place.formatted_address;
+                        sfAddrOk = true;
+                        addrInput.style.backgroundColor = '#f0f0f0';
+                        addrInput.setAttribute('readonly', 'readonly');
+                        sfData.address = addrInput.value;
+                        sfStep++;
+                        sfShowStep(sfStep);
+                    }
+                });
+
+                addrInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') e.preventDefault();
+                });
+            }
+
+            // Phone formatting
+            var phoneInput = document.getElementById('sfPhone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function(e) {
+                    var v = e.target.value.replace(/\D/g, '');
+                    if (v.length > 0) {
+                        if (v.length <= 3) {
+                            e.target.value = '(' + v;
+                        } else if (v.length <= 6) {
+                            e.target.value = '(' + v.slice(0,3) + ') ' + v.slice(3);
+                        } else {
+                            e.target.value = '(' + v.slice(0,3) + ') ' + v.slice(3,6) + '-' + v.slice(6,10);
+                        }
+                    }
+                });
+            }
+
+            // Set initial progress
+            document.getElementById('sfProgress').style.width = (1 / sfTotal * 100) + '%';
         });
     </script>
 
