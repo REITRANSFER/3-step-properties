@@ -1087,7 +1087,7 @@
 
                 <!-- Step 1: Address -->
                 <div class="sf-step sf-active" data-sf="1">
-                    <div class="sf-step-num">Question 1 of 5</div>
+                    <div class="sf-step-num">Question 1 of 6</div>
                     <div class="sf-question">What's the property address?</div>
                     <input type="text" class="sf-input" id="sfAddress" placeholder="Enter your property address" autocomplete="off">
                     <button class="sf-btn-continue" onclick="sfValidateAddress()">Continue &rarr;</button>
@@ -1096,7 +1096,7 @@
                 <!-- Step 2: Market Status -->
                 <div class="sf-step" data-sf="2">
                     <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
-                    <div class="sf-step-num">Question 2 of 5</div>
+                    <div class="sf-step-num">Question 2 of 6</div>
                     <div class="sf-question">Is this home currently listed on the market?</div>
                     <div class="sf-options">
                         <button class="sf-option" onclick="sfSelect('marketStatus','Not listed')">No, it's not listed on the market</button>
@@ -1108,7 +1108,7 @@
                 <!-- Step 3: Property Type -->
                 <div class="sf-step" data-sf="3">
                     <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
-                    <div class="sf-step-num">Question 3 of 5</div>
+                    <div class="sf-step-num">Question 3 of 6</div>
                     <div class="sf-question">What type of property do you have?</div>
                     <div class="sf-options">
                         <button class="sf-option" onclick="sfSelect('propertyType','Single Family')">Single Family Home</button>
@@ -1120,10 +1120,23 @@
                     </div>
                 </div>
 
-                <!-- Step 4: Motivation -->
+                <!-- Step 4: Ownership Length -->
                 <div class="sf-step" data-sf="4">
                     <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
-                    <div class="sf-step-num">Question 4 of 5</div>
+                    <div class="sf-step-num">Question 4 of 6</div>
+                    <div class="sf-question">How long have you owned the home?</div>
+                    <div class="sf-options">
+                        <button class="sf-option" onclick="sfSelect('ownershipLength','3 to 5 years')">3 to 5 years</button>
+                        <button class="sf-option" onclick="sfSelect('ownershipLength','5 to 10 years')">5 to 10 years</button>
+                        <button class="sf-option" onclick="sfSelect('ownershipLength','10+ years')">10+ years</button>
+                        <button class="sf-option" onclick="sfDisqualify()">Less than 3 years</button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Motivation -->
+                <div class="sf-step" data-sf="5">
+                    <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
+                    <div class="sf-step-num">Question 5 of 6</div>
                     <div class="sf-question">What's your primary reason for selling?</div>
                     <div class="sf-options">
                         <button class="sf-option" onclick="sfSelect('motivation','Inheritance')">Inheritance</button>
@@ -1135,10 +1148,10 @@
                     </div>
                 </div>
 
-                <!-- Step 5: Condition -->
-                <div class="sf-step" data-sf="5">
+                <!-- Step 6: Condition -->
+                <div class="sf-step" data-sf="6">
                     <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
-                    <div class="sf-step-num">Question 5 of 5</div>
+                    <div class="sf-step-num">Question 6 of 6</div>
                     <div class="sf-question">How would you describe your home's condition?</div>
                     <div class="sf-options">
                         <button class="sf-option" onclick="sfSelect('condition','Move-in ready')">Move-in ready &mdash; Updated and well-maintained</button>
@@ -1148,8 +1161,8 @@
                     </div>
                 </div>
 
-                <!-- Step 6: Contact Info -->
-                <div class="sf-step" data-sf="6">
+                <!-- Step 7: Contact Info -->
+                <div class="sf-step" data-sf="7">
                     <button class="sf-btn-back" onclick="sfBack()">&larr; Back</button>
                     <div class="sf-step-num">Final Step</div>
                     <div class="sf-question">Where should we send your cash offer?</div>
@@ -1192,7 +1205,7 @@
 
         // ── Survey logic ──
         var sfStep = 1;
-        var sfTotal = 6;
+        var sfTotal = 7;
         var sfData = {};
         // Capture UTM parameters, fbclid, and IP address
         var utmParams={};(function(){var p=new URLSearchParams(window.location.search);['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'].forEach(function(k){var v=p.get(k);if(v)utmParams[k]=v;});utmParams.landing_page=window.location.pathname;fetch('https://api.ipify.org?format=json').then(function(r){return r.json();}).then(function(d){utmParams.ip_address=d.ip;}).catch(function(){});})();
