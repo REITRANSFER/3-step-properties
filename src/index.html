@@ -1281,6 +1281,37 @@
 
             Object.keys(utmParams).forEach(function(k){sfData[k]=utmParams[k];});
             // Also send to n8n
+            
+            // ─── Lead scoring + conditional Meta Pixel event ─────────────
+            try {
+              var __score = window.calculateLeadScore(sfData);
+              var __quality = window.leadQuality(__score);
+              var __qualified = window.isQualifiedForMeta(sfData);
+              var __dqReason = __qualified ? null : window.disqualifyReasonFor(sfData);
+              var __eventId = 'lead-' + Date.now() + '-' + Math.random().toString(36).slice(2, 11);
+              sfData.qualified = __qualified;
+              sfData.lead_score = __score;
+              sfData.lead_quality = __quality;
+              sfData.disqualify_reason = __dqReason;
+              sfData.meta_event_id = __eventId;
+              sfData.meta_event_name = __qualified ? 'Lead' : 'LeadLowIntent';
+              sfData.meta_value = __qualified ? __score * 25 : 0;
+              if (window.fbq) {
+                if (__qualified) {
+                  fbq('track', 'Lead', {
+                    value: __score * 25, currency: 'USD',
+                    content_name: '3 Step Home Sale Survey', content_category: 'real_estate',
+                    lead_score: __score, lead_quality: __quality
+                  }, { eventID: __eventId });
+                } else {
+                  fbq('trackCustom', 'LeadLowIntent', {
+                    content_name: '3 Step Home Sale Survey', content_category: 'real_estate',
+                    disqualify_reason: __dqReason, lead_score: __score
+                  }, { eventID: __eventId });
+                }
+              }
+            } catch(e) { console.error('scoring error:', e); }
+
             fetch('https://n8n.srv1197128.hstgr.cloud/webhook/lead-3-step-home-sale', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1360,6 +1391,61 @@
         <img src="logo.png" alt="3 Step Home Buyers" style="width: 120px; margin-bottom: 15px; opacity: 0.9;">
         <p>Copyright 2026. 3 Step Home Sale. All rights reserved. | 1440 N Edgewood St, Suite 167, Arlington, VA 22201</p>
     </div>
+
+
+<script>
+// ─── Lead scoring (browser-side, universal pattern matcher) ─────────────
+(function(){
+  function _scoreField(value, mapping) {
+    if (!value) return 0;
+    var v = String(value).toLowerCase();
+    for (var key in mapping) {
+      if (v.indexOf(key) !== -1) return mapping[key];
+    }
+    return 0;
+  }
+  window.calculateLeadScore = function(d) {
+    var t = _scoreField(d.timeline, {
+      'asap': 3, '7 days': 3, 'within 7': 3, 'immediate': 3,
+      '2 weeks': 2, 'within 14': 2,
+      '30 days': 1,
+      '60 days': 0, '3-6 months': 0, 'flexible': 0, 'no rush': 0, 'exploring': 0
+    });
+    var r = _scoreField(d.reason || d.motivation, {
+      'foreclosure': 3, 'pre-foreclosure': 3, 'behind': 3,
+      'inherit': 2, 'medical': 2, 'hardship': 2, 'tax lien': 2, 'delinquent': 2, 'repairs': 2,
+      'other': 1,
+      'relocation': 0, 'divorce': 0, 'separation': 0, 'downsizing': 0, 'life change': 0, 'health': 0
+    });
+    var c = _scoreField(d.condition, {
+      'poor': 1, 'distressed': 1, 'severe': 1, 'major repairs': 1, 'major': 1, 'not livable': 1, 'significant work': 1, 'damage': 1, 'needs repairs': 1,
+      'fair': 0, 'livable': 0, 'dated': 0, 'cosmetic': 0, 'minor': 0, 'good': 0, 'excellent': 0, 'move-in': 0, 'updated': 0
+    });
+    return Math.min(10, t + r + c);
+  };
+  window.isQualifiedForMeta = function(d) {
+    var pt = String(d.propertyType || '').toLowerCase();
+    var okType = pt.indexOf('single') !== -1 || pt.indexOf('multi') !== -1 || pt.indexOf('duplex') !== -1;
+    var listed = String(d.listed || d.listedOnMarket || d.marketStatus || 'not-listed').toLowerCase();
+    var okListed = listed.indexOf('not') !== -1 || listed.indexOf('no -') !== -1 || listed === 'not-listed';
+    var owner = String(d.isLegalOwner || d.owner || 'yes').toLowerCase();
+    var okOwner = owner.indexOf('no, ') === -1 && owner !== 'no';
+    return okType && okListed && okOwner;
+  };
+  window.leadQuality = function(score) {
+    if (score >= 6) return 'premium';
+    if (score >= 2) return 'standard';
+    return 'low';
+  };
+  window.disqualifyReasonFor = function(d) {
+    var pt = String(d.propertyType || '').toLowerCase();
+    if (pt.indexOf('single') === -1 && pt.indexOf('multi') === -1 && pt.indexOf('duplex') === -1) return 'property_type';
+    var listed = String(d.listed || d.listedOnMarket || d.marketStatus || 'not-listed').toLowerCase();
+    if (listed.indexOf('not') === -1 && listed.indexOf('no') === -1) return 'listed';
+    return 'not_owner';
+  };
+})();
+</script>
 
 </body>
 </html>
