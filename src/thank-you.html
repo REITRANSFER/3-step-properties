@@ -25,8 +25,20 @@
 
     <!-- Lead Conversion Event -->
     <script>
-    fbq('track', 'Lead');
-    </script>
+(function(){
+  // Lead event with eventID-based dedup. sessionStorage key persists across
+  // page reloads in the same browser session so Meta dedupes refresh fires.
+  try {
+    var k = "lead_event_id";
+    var eid = sessionStorage.getItem(k);
+    if (!eid) {
+      eid = "lead-" + Date.now() + "-" + Math.random().toString(36).slice(2, 11);
+      sessionStorage.setItem(k, eid);
+    }
+    if (window.fbq) fbq("track", "Lead", {}, { eventID: eid });
+  } catch(e) {}
+})();
+</script>
 
     <style>
         * {
